@@ -10,7 +10,7 @@ const logger = {
     error: (error) => alert('Error', error),
     detect: (detection) => alert('Detected', detection)
 };
-
+ 
 const setLogPath = (logFileName) => {
     const logDir = 'logs';
     if (!fs.existsSync(logDir)) {
