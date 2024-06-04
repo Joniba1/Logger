@@ -31,5 +31,5 @@ logger.terminate();
 ## Note
 
 - The log files are stored in the `logs` directory.
-- When starting a new logger without terminating the last one, the `terminate()` function will be called automatically.
-- The logger will not start if the file name specified in the `start()` function already exists.
+- You must terminate the logger before attempting to start a new one.
+- The logger will not start if the file name specified in the `start()` function already exists or is empty.
