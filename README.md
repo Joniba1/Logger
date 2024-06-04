@@ -22,7 +22,7 @@ logger.start('file-name');
 logger.error(error);
 
 // Log a detection
-logger.detect('A detection was made');
+logger.detect('detection');
 
 // Terminate logger
 logger.terminate();
