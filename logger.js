@@ -10,7 +10,7 @@ const logger = {
     error: (error) => alert('Error', error),
     detect: (detection) => alert('Detected', detection)
 };
- 
+
 const setLogPath = (logFileName) => {
     const logDir = 'logs';
     if (!fs.existsSync(logDir)) {
@@ -20,7 +20,7 @@ const setLogPath = (logFileName) => {
 };
 
 //Logs a timestamp and a msg
-const log = (msg) => {
+const log = async (msg) => {
     const date = new Date();
     const options = {
         timeZone: 'Asia/Jerusalem',
@@ -35,7 +35,11 @@ const log = (msg) => {
     const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
     const logMessage = `[${formattedDate}] ${msg}\n`;
 
-    fs.appendFileSync(logPath, logMessage);
+    try {
+        await fs.promises.appendFile(logPath, logMessage, 'utf-8');
+    } catch (err) {
+        console.error(err);
+    }
 };
 
 const startLogger = (logFileName) => {
