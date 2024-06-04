@@ -57,7 +57,7 @@ const initializeLogger = () => {
     };
 
     const terminateLogger = () => {
-        if (activeLogger !== '' && fs.existsSync(logPath)) {
+        if (activeLogger !== '') {
             log(`Terminated logger`);
             activeLogger = '';
         }
