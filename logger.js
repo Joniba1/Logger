@@ -63,7 +63,6 @@ const terminateLogger = () => {
     }
 };
 
-
 const alert = (type, detection) => {
     if (!activeLogger) {
         console.error('Error: Logger has not been started.');
