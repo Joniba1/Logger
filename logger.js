@@ -3,29 +3,33 @@ const path = require('path');
 
 const Logger = (() => {
     let instance;
-    let timer;
-    let logQueue = Promise.resolve();
 
     const createInstance = () => {
         let logPath = '';
         let isRunning = false;
 
         const log = (data) => {
-            logQueue = logQueue.then(() => {
-                return new Promise((resolve, reject) => {
-                    fs.appendFile(logPath, JSON.stringify(data) + '\n', (err) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                });
-            });
+            fs.appendFileSync(logPath, JSON.stringify(data) + '\n');
         };
 
+        const parseToJson = (input) => {
+            try {
+                return JSON.parse(input);
+            } catch (error) {
+                console.log("couldnt parse")
+            }
+        }
+
         return {
-            start: async (logFileName) => {
+            start: (logFileName) => {
+                if (isRunning) {
+                    console.log('Logger is already running.');
+                    return;
+                } else if (!logFileName) {
+                    console.log('Specify a file name');
+                    return;
+                }
+
                 const logDir = 'logs';
                 if (!fs.existsSync(logDir)) {
                     fs.mkdirSync(logDir);
@@ -34,8 +38,7 @@ const Logger = (() => {
                 logPath = path.join(logDir, `${logFileName}.jsonl`);
 
                 const data = {
-                    message: "deployment",
-                    timestamp: "00:00:00",
+                    message: "take-off",
                     telemetry: {
                         azimuth: "",
                         alt: "",
@@ -48,45 +51,17 @@ const Logger = (() => {
                 };
 
                 log(data);
-                timer = new Date();
                 isRunning = true;
             },
-            terminate: () => {
-                isRunning = false;
-                const diff = new Date() - timer;
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff / (1000 * 60)) % 60);
-                const seconds = Math.floor((diff / 1000) % 60);
-                const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-                const data = {
-                    message: "terminated",
-                    timestamp: formattedTime
-                }
-
-                log(data);
-            },
-            detect: (service) => {
+            startService: (service) => {
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
-                const diff = new Date() - timer;
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff / (1000 * 60)) % 60);
-                const seconds = Math.floor((diff / 1000) % 60);
-                const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
                 const data = {
-                    message: "detection",
+                    message: "Started-service",
                     service: service,
-                    timestamp: formattedTime,
-                    detection: {
-                        x: "",
-                        y: "",
-                        w: "",
-                        h: ""
-                    },
                     telemetry: {
                         azimuth: "",
                         alt: "",
@@ -97,12 +72,80 @@ const Logger = (() => {
                         yaw: ""
                     }
                 };
+
                 log(data);
             },
-            error: (err) => {
+            terminateService: (service) => {
+                if (!isRunning) {
+                    console.log('You must initialize the logger');
+                    return;
+                }
+
                 const data = {
+                    message: "terminated-service",
+                    service: service,
+                    telemetry: {
+                        azimuth: "",
+                        alt: "",
+                        lat: "",
+                        lon: "",
+                        pitch: "",
+                        roll: "",
+                        yaw: ""
+                    }
+                };
+
+                log(data);
+            },
+            terminate: () => {
+                if (!isRunning) {
+                    console.log('Logger is not running.');
+                    return;
+                }
+
+                isRunning = false;
+
+                const data = {
+                    message: "terminated",
+                };
+
+                log(data);
+
+            },
+            detect: (bbox1) => {
+                if (!isRunning) {
+                    console.log('You must initialize the logger');
+                    return;
+                }
+
+                let bbox = "";
+
+                try {
+                    bbox = JSON.parse(bbox1);
+
+                } catch (err) {
+                    console.log(err);
+                }
+
+                const data = {
+                    message: "event",
+                    // service: service,
+                    bbox: {
+                        ...bbox
+                    },
+                    // telemetry: {
+                    //     ...telemetry
+                    // }
+                };
+
+                log(data);
+            },
+
+            error: (service, err) => {
+                const data = {
+                    service: service,
                     message: err,
-                    service: ""
+
                 };
                 log(data);
             }
