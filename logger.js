@@ -1,92 +1,122 @@
 const fs = require('fs');
 const path = require('path');
 
-const initializeLogger = () => {
-    let logPath = '';
-    let activeLogger = '';
+const Logger = (() => {
+    let instance;
+    let timer;
+    let logQueue = Promise.resolve();
 
-    const setLogPath = (logFileName) => {
-        const logDir = 'logs';
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir);
-        }
-        logPath = path.join(logDir, `${logFileName}.txt`);
-    };
+    const createInstance = () => {
+        let logPath = '';
+        let isRunning = false;
 
-    const log = async (msg) => {
-        const date = new Date();
-        const options = {
-            timeZone: 'Asia/Jerusalem',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
+        const log = (data) => {
+            logQueue = logQueue.then(() => {
+                return new Promise((resolve, reject) => {
+                    fs.appendFile(logPath, JSON.stringify(data) + '\n', (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            });
         };
-        const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
-        const logMessage = `[${formattedDate}] ${msg}\n`;
 
-        try {
-            await fs.promises.appendFile(logPath, logMessage);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+        return {
+            start: async (logFileName) => {
+                const logDir = 'logs';
+                if (!fs.existsSync(logDir)) {
+                    fs.mkdirSync(logDir);
+                }
 
-    const startLogger = (logFileName) => {
-        if (activeLogger !== '' && activeLogger !== logFileName) {
-            console.log('A logger is active!\n Make sure to use terminate() before attempting to start a new logger');
-            return;
-        }
+                logPath = path.join(logDir, `${logFileName}.jsonl`);
 
-        setLogPath(logFileName);
+                const data = {
+                    message: "deployment",
+                    timestamp: "00:00:00",
+                    telemetry: {
+                        azimuth: "",
+                        alt: "",
+                        lat: "",
+                        lon: "",
+                        pitch: "",
+                        roll: "",
+                        yaw: ""
+                    }
+                };
 
-        if (!logFileName) {
-            console.log('A file name is required!');
-            return;
-        }
-        else if (fs.existsSync(logPath)) {
-            console.error(`Error: ${logFileName} already exists.`);
-            return;
-        }
+                log(data);
+                timer = new Date();
+                isRunning = true;
+            },
+            terminate: () => {
+                isRunning = false;
+                const diff = new Date() - timer;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+                const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-        activeLogger = logFileName;
-        log(`Deployed: ${logFileName}`);
-    };
+                const data = {
+                    message: "terminated",
+                    timestamp: formattedTime
+                }
 
-    const terminateLogger = () => {
-        if (activeLogger !== '') {
-            log(`Terminated logger`);
-            activeLogger = '';
-        }
-    };
+                log(data);
+            },
+            detect: (service) => {
+                if (!isRunning) {
+                    console.log('You must initialize the logger');
+                    return;
+                }
+                const diff = new Date() - timer;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+                const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-    const alert = (type, detection) => {
-        if (!activeLogger) {
-            console.error('Error: Logger has not been started.');
-            return;
-        }
-
-        const logMsg = `${type}: ${detection}`;
-        log(logMsg);
+                const data = {
+                    message: "detection",
+                    service: service,
+                    timestamp: formattedTime,
+                    detection: {
+                        x: "",
+                        y: "",
+                        w: "",
+                        h: ""
+                    },
+                    telemetry: {
+                        azimuth: "",
+                        alt: "",
+                        lat: "",
+                        lon: "",
+                        pitch: "",
+                        roll: "",
+                        yaw: ""
+                    }
+                };
+                log(data);
+            },
+            error: (err) => {
+                const data = {
+                    message: err,
+                    service: ""
+                };
+                log(data);
+            }
+        };
     };
 
     return {
-        startLogger,
-        terminateLogger,
-        alert
+        getInstance: () => {
+            if (!instance) {
+                instance = createInstance();
+            }
+            return instance;
+        }
     };
-};
+})();
 
-const loggerInstance = initializeLogger();
-
-const logger = {
-    start: (logFileName) => loggerInstance.startLogger(logFileName),
-    terminate: () => loggerInstance.terminateLogger(),
-    error: (error) => loggerInstance.alert('Error', error),
-    detect: (detection) => loggerInstance.alert('Detected', detection)
-};
-
-module.exports = logger;
+module.exports = Logger;

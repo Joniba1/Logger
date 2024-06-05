@@ -1,9 +1,11 @@
-const logger = require('./logger');
+const Logger = require('./logger');
 
-logger.start('test-1')
+const logger = Logger.getInstance();
 
-logger.detect('detection')
-
-logger.error('error');
-
+logger.start('test-1');
+logger.detect('hozi')
+logger.detect('sol')
+logger.detect('galant')
 logger.terminate();
+logger.detect('galant')
+
