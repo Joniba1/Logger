@@ -12,16 +12,18 @@ const Logger = (() => {
             fs.appendFileSync(logPath, JSON.stringify(data) + '\n');
         };
 
-        const parseToJson = (input) => {
+        function isJSON(obj) {
             try {
-                return JSON.parse(input);
-            } catch (error) {
-                console.log("couldnt parse")
+                const jsonString = JSON.stringify(obj);
+                JSON.parse(jsonString);
+                return true;
+            } catch (err) {
+                return false;
             }
         }
 
         return {
-            start: (logFileName) => {
+            start: (logFileName, telemetry) => {
                 if (isRunning) {
                     console.log('Logger is already running.');
                     return;
@@ -34,50 +36,53 @@ const Logger = (() => {
                 if (!fs.existsSync(logDir)) {
                     fs.mkdirSync(logDir);
                 }
-
                 logPath = path.join(logDir, `${logFileName}.jsonl`);
+
+                if (fs.existsSync(logPath)) {
+                    // console.log('File name already exists');
+                    throw new Error('File name already exists')
+                    return;
+                }
 
                 const data = {
                     message: "take-off",
                     telemetry: {
-                        azimuth: "",
-                        alt: "",
-                        lat: "",
-                        lon: "",
-                        pitch: "",
-                        roll: "",
-                        yaw: ""
+                        ...telemetry
                     }
                 };
 
                 log(data);
                 isRunning = true;
             },
-            startService: (service) => {
+            startService: (service, telemetry) => {
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
 
+                if (!service || !telemetry) {
+                    console.log("1 or more arguments are missing");
+                    return;
+                }
+
                 const data = {
-                    message: "Started-service",
+                    message: "initiated-service",
                     service: service,
                     telemetry: {
-                        azimuth: "",
-                        alt: "",
-                        lat: "",
-                        lon: "",
-                        pitch: "",
-                        roll: "",
-                        yaw: ""
+                        ...telemetry
                     }
                 };
 
                 log(data);
             },
-            terminateService: (service) => {
+            terminateService: (service, telemetry) => {
                 if (!isRunning) {
                     console.log('You must initialize the logger');
+                    return;
+                }
+
+                if (!service || !telemetry) {
+                    console.log("1 or more arguments are missing");
                     return;
                 }
 
@@ -85,13 +90,7 @@ const Logger = (() => {
                     message: "terminated-service",
                     service: service,
                     telemetry: {
-                        azimuth: "",
-                        alt: "",
-                        lat: "",
-                        lon: "",
-                        pitch: "",
-                        roll: "",
-                        yaw: ""
+                        ...telemetry
                     }
                 };
 
@@ -112,39 +111,48 @@ const Logger = (() => {
                 log(data);
 
             },
-            detect: (bbox1) => {
+            event: (service, bbox, telemetry) => {
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
 
-                let bbox = "";
+                if (!service || !bbox || !telemetry) {
+                    console.log('1 or more arguments are missing')
+                }
 
-                try {
-                    bbox = JSON.parse(bbox1);
-
-                } catch (err) {
-                    console.log(err);
+                if (!isJSON(bbox) || !isJSON(telemetry)) {
+                    console.log("Invalid JSON");
+                    return;
                 }
 
                 const data = {
                     message: "event",
-                    // service: service,
+                    service: service,
                     bbox: {
                         ...bbox
                     },
-                    // telemetry: {
-                    //     ...telemetry
-                    // }
+                    telemetry: {
+                        ...telemetry
+                    }
                 };
 
                 log(data);
             },
-
             error: (service, err) => {
+                if (!isRunning) {
+                    console.log('You must initialize the logger');
+                    return;
+                }
+
+                if (!service || !err) {
+                    console.log('1 or more arguments are missing')
+                }
+
                 const data = {
+                    message: 'error',
                     service: service,
-                    message: err,
+                    error: err
 
                 };
                 log(data);
