@@ -1,0 +1,5 @@
+{"message":"take-off","telemetry":{}}
+{"message":"initiated-service","service":"hozi","telemetry":{"azimut":1}}
+{"message":"error","service":"hozi","error":"err"}
+{"message":"terminated-service","service":"hozi","telemetry":{"azimut":2}}
+{"message":"terminated"}

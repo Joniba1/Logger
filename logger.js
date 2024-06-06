@@ -12,7 +12,7 @@ const Logger = (() => {
             fs.appendFileSync(logPath, JSON.stringify(data) + '\n');
         };
 
-        function isJSON(obj) {
+        const isJSON = (obj) => {
             try {
                 const jsonString = JSON.stringify(obj);
                 JSON.parse(jsonString);
