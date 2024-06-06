@@ -113,6 +113,10 @@ const Logger = (() => {
                 else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
                     return;
+                } 
+                else if (!isJSON(telemetry)) {
+                    console.log('    JSON');
+                    return;
                 }
 
                 const data = {
@@ -134,6 +138,10 @@ const Logger = (() => {
                 }
                 else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
+                    return;
+                } 
+                else if (!isJSON(telemetry)) {
+                    console.log("Invalid JSON");
                     return;
                 }
 
@@ -184,6 +192,10 @@ const Logger = (() => {
                 }
                 else if (!service || !err) {
                     console.log('1 or more arguments are missing')
+                }
+                else if (!isJSON(telemetry)) {
+                    console.log("Invalid JSON");
+                    return;
                 }
 
                 const data = {
