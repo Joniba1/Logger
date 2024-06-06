@@ -175,7 +175,7 @@ const Logger = (() => {
 
                 log(data);
             },
-            error: async (service, err) => {
+            error: async (service, err, telemetry) => {
                 await logging();
 
                 if (!isRunning) {
@@ -189,7 +189,10 @@ const Logger = (() => {
                 const data = {
                     message: 'error',
                     service: service,
-                    error: err
+                    error: err,
+                    telemetry: {
+                        ...telemetry
+                    }
 
                 };
                 log(data);
