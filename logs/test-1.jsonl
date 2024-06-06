@@ -1,5 +1,6 @@
-{"message":"take-off","telemetry":{}}
+{"message":"take-off","telemetry":{"x":1}}
 {"message":"initiated-service","service":"hozi","telemetry":{"azimut":1}}
-{"message":"error","service":"hozi","error":"err"}
-{"message":"terminated-service","service":"hozi","telemetry":{"azimut":2}}
+{"message":"event","service":"1","bbox":{"x":1,"y":2,"h":1,"w":3},"telemetry":{"x":1,"y":2,"h":1,"w":3}}
+{"message":"error","service":"hozi","error":"I`m an error"}
+{"message":"terminated-service","service":"hozi","telemetry":{"azimut":1}}
 {"message":"terminated"}

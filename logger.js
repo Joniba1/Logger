@@ -2,14 +2,26 @@ const fs = require('fs');
 const path = require('path');
 
 const Logger = (() => {
-    let instance;
-
     const createInstance = () => {
         let logPath = '';
         let isRunning = false;
+        let isLogging = false;
+        const logQueue = [];
 
-        const log = (data) => {
-            fs.appendFileSync(logPath, JSON.stringify(data) + '\n');
+        const log = async (data) => {
+            logQueue.push(data);
+            if (!isLogging) {
+                isLogging = true;
+                while (logQueue.length > 0) {
+                    const logItem = logQueue.shift();
+                    try {
+                        await fs.promises.appendFile(logPath, JSON.stringify(logItem) + '\n');
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+                isLogging = false;
+            }
         };
 
         const isJSON = (obj) => {
@@ -22,25 +34,62 @@ const Logger = (() => {
             }
         }
 
+
+
+        const logging = async () => {
+            await new Promise(resolve => {
+                const checkLogging = setInterval(() => {
+                    if (!isLogging) {
+                        clearInterval(checkLogging);
+                        resolve();
+                    }
+                }, 50);
+            });
+        };
+
         return {
-            start: (logFileName, telemetry) => {
-                if (isRunning) {
-                    console.log('Logger is already running.');
+            terminate: async () => {
+                await logging();
+
+                if (!isRunning) {
+                    console.log('Logger is not running.');
                     return;
-                } else if (!logFileName) {
-                    console.log('Specify a file name');
+                }
+
+                isRunning = false;
+
+                const data = {
+                    message: "terminated",
+                };
+
+                log(data);
+            },
+            start: async (logFileName, telemetry) => {
+                await logging();
+
+                if (isRunning) {
+                    console.log('Terminate the logger before starting a new one');
+                    return;
+                }
+                else if (!logFileName || !telemetry) {
+                    console.log('1 or more arguments are missing');
+                    return;
+                }
+                else if (!isJSON(telemetry)) {
+                    console.log("Invalid JSON");
                     return;
                 }
 
                 const logDir = 'logs';
+
                 if (!fs.existsSync(logDir)) {
                     fs.mkdirSync(logDir);
                 }
+
                 logPath = path.join(logDir, `${logFileName}.jsonl`);
 
                 if (fs.existsSync(logPath)) {
-                    // console.log('File name already exists');
-                    throw new Error('File name already exists')
+                    console.log('File name already exists');
                     return;
                 }
 
@@ -54,13 +103,14 @@ const Logger = (() => {
                 log(data);
                 isRunning = true;
             },
-            startService: (service, telemetry) => {
+            initiateService: async (service, telemetry) => {
+                await logging();
+
                 if (!isRunning) {
-                    console.log('You must initialize the logger');
+                    console.log('You must initialize a logger');
                     return;
                 }
-
-                if (!service || !telemetry) {
+                else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
                     return;
                 }
@@ -75,13 +125,14 @@ const Logger = (() => {
 
                 log(data);
             },
-            terminateService: (service, telemetry) => {
+            terminateService: async (service, telemetry) => {
+                await logging();
+
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
-
-                if (!service || !telemetry) {
+                else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
                     return;
                 }
@@ -96,32 +147,17 @@ const Logger = (() => {
 
                 log(data);
             },
-            terminate: () => {
-                if (!isRunning) {
-                    console.log('Logger is not running.');
-                    return;
-                }
+            event: async (service, bbox, telemetry) => {
+                await logging();
 
-                isRunning = false;
-
-                const data = {
-                    message: "terminated",
-                };
-
-                log(data);
-
-            },
-            event: (service, bbox, telemetry) => {
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
-
-                if (!service || !bbox || !telemetry) {
+                else if (!service || !bbox || !telemetry) {
                     console.log('1 or more arguments are missing')
                 }
-
-                if (!isJSON(bbox) || !isJSON(telemetry)) {
+                else if (!isJSON(bbox) || !isJSON(telemetry)) {
                     console.log("Invalid JSON");
                     return;
                 }
@@ -139,13 +175,14 @@ const Logger = (() => {
 
                 log(data);
             },
-            error: (service, err) => {
+            error: async (service, err) => {
+                await logging();
+
                 if (!isRunning) {
                     console.log('You must initialize the logger');
                     return;
                 }
-
-                if (!service || !err) {
+                else if (!service || !err) {
                     console.log('1 or more arguments are missing')
                 }
 
@@ -160,13 +197,9 @@ const Logger = (() => {
         };
     };
 
+    const instance = createInstance();
     return {
-        getInstance: () => {
-            if (!instance) {
-                instance = createInstance();
-            }
-            return instance;
-        }
+        getInstance: () => instance
     };
 })();
 

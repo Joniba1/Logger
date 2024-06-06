@@ -1,1 +1,2 @@
-{"message":"take-off","telemetry":{}}
+{"message":"take-off","telemetry":{"x":1}}
+{"message":"event","service":"service","bbox":{"x":1,"y":2,"h":1,"w":3},"telemetry":{"x":1,"y":2,"h":1,"w":3}}
