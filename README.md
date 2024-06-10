@@ -46,7 +46,7 @@ logger.terminate();
 ## Usage (Python)
 
 ```python
-from logger_python import Logger
+from logger import Logger
 
 def main():
     logger = Logger()
