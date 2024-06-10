@@ -4,15 +4,15 @@ This module provides a simple logging functionality. It allows you to log messag
 
 ## Functionalities
 
-- `start(file-name, telemetry: {})` Starts the logger with the specified log file name. Logs a startup message with a timestamp.
+- `start(file-name, { telemetry })` Starts the logger with the specified log file name. Logs a startup message with a timestamp.
 
-- `initiateService(service-name, telemetry: {})` Logs an initiation-service message.
+- `initiateService(service-name, { telemetry })` Logs an initiation-service message.
 
-- `terminateService(service-name, telemetry: {})` Logs a termination-service message.
+- `terminateService(service-name, { telemetry })` Logs a termination-service message.
 
-- `error(service-name, error, telemetry: {})` Logs an error message.
+- `error(service-name, error, { telemetry })` Logs an error message.
 
-- `event(service-name, bbox: {}, telemetry: {})` Logs a detection message.
+- `event(service-name, { bbox }, { telemetry })` Logs a detection message.
 
 - `terminate()`: Terminates the logger.
 
