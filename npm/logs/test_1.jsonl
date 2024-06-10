@@ -1,0 +1,6 @@
+{"message":"take-off","telemetry":{"azimut":1,"lan":1}}
+{"message":"initiated-service","service":"service-name","telemetry":{"azimut":1,"lan":1}}
+{"message":"error","service":"service-name","error":"some-error","telemetry":{"azimut":3,"lan":1}}
+{"message":"event","service":"service-name","bbox":{"x":1,"y":1,"h":1,"w":1},"telemetry":{"azimut":4,"lan":1}}
+{"message":"terminated-service","service":"service-name","telemetry":{"azimut":2,"lan":1}}
+{"message":"terminated"}
