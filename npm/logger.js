@@ -34,8 +34,6 @@ const Logger = (() => {
             }
         }
 
-
-
         const logging = async () => {
             await new Promise(resolve => {
                 const checkLogging = setInterval(() => {
