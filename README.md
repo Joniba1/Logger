@@ -17,7 +17,9 @@ This module provides a simple logging functionality. It allows you to log messag
 - `terminate()`: Terminates the logger.
 
 
-## Usage (JS)
+## Usage
+
+### JavaScript
 
 ```javascript
 const Logger = require('logger');
@@ -43,7 +45,7 @@ logger.terminate();
 ```
 
 
-## Usage (Python)
+### Python
 
 ```python
 from logger import Logger
@@ -71,7 +73,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-```
+``` 
 
 ## Notes
 
