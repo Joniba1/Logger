@@ -77,5 +77,5 @@ if __name__ == '__main__':
 
 - The log files are stored in the `logs` directory.
 - You must terminate the logger before attempting to start a new one.
-- The logger will not start if the file name specified in the `start()` function already exists or is empty.
+- The logger will not start if the file name specified in the `start()` function already exists or if the field is empty.
 - All objects must be in a valid JSON format.
