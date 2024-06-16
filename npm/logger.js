@@ -7,14 +7,8 @@ const Logger = (() => {
         let isRunning = false;
         let isLogging = false;
         const logQueue = [];
-        let storageAvailable = true;
 
         const log = async (data) => {
-            if (!storageAvailable) {
-                console.log('Storage is full');
-                return;
-            }
-
             logQueue.push(data);
 
             if (!isLogging) {
@@ -25,8 +19,7 @@ const Logger = (() => {
                         await fs.promises.appendFile(logPath, JSON.stringify(logItem) + '\n');
                     } catch (err) {
                         if (err.code === 'ENOSPC') {
-                            storageAvailable = false;
-                            console.log('Storage is full');
+                            throw new Error('No available disk space');
                         } else {
                             console.error(err);
                         }
