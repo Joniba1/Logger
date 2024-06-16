@@ -2,6 +2,9 @@ import os
 import json
 import asyncio
 
+class StorageFullError(Exception):
+    pass
+
 class Logger:
     def __init__(self):
         self.log_path = ''
@@ -19,7 +22,8 @@ class Logger:
                     with open(self.log_path, 'a') as file:
                         file.write(json.dumps(log_item) + '\n')
                 except Exception as e:
-                    print(e)
+                    self.is_logging = False
+                    raise StorageFullError(f"Error while logging: {e}")
             self.is_logging = False
 
     def log(self, data):
