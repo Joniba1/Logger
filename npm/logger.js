@@ -7,9 +7,16 @@ const Logger = (() => {
         let isRunning = false;
         let isLogging = false;
         const logQueue = [];
+        let storageAvailable = true;
 
         const log = async (data) => {
+            if (!storageAvailable) {
+                console.log('Storage is full');
+                return;
+            }
+
             logQueue.push(data);
+
             if (!isLogging) {
                 isLogging = true;
                 while (logQueue.length > 0) {
@@ -17,7 +24,12 @@ const Logger = (() => {
                     try {
                         await fs.promises.appendFile(logPath, JSON.stringify(logItem) + '\n');
                     } catch (err) {
-                        console.error(err);
+                        if (err.code === 'ENOSPC') {
+                            storageAvailable = false;
+                            console.log('Storage is full');
+                        } else {
+                            console.error(err);
+                        }
                     }
                 }
                 isLogging = false;
@@ -111,7 +123,7 @@ const Logger = (() => {
                 else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
                     return;
-                } 
+                }
                 else if (!isJSON(telemetry)) {
                     console.log('    JSON');
                     return;
@@ -137,7 +149,7 @@ const Logger = (() => {
                 else if (!service || !telemetry) {
                     console.log("1 or more arguments are missing");
                     return;
-                } 
+                }
                 else if (!isJSON(telemetry)) {
                     console.log("Invalid JSON");
                     return;
