@@ -191,4 +191,3 @@ class Logger:
 
     def error(self, service, err):
         asyncio.run(self.error_async(service, err))
-

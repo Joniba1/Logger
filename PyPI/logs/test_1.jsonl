@@ -1,6 +1,6 @@
-{"message": "take-off", "telemetry": {"azimut": 1, "lan": 1}}
-{"message": "initiated-service", "service": "service-name", "telemetry": {"azimut": 1, "lan": 1}}
-{"message": "error", "service": "service-name", "error": "some-error", "telemetry": {"azimut": 3, "lan": 1}}
-{"message": "event", "service": "service-name", "bbox": {"x": 1, "y": 1, "h": 1, "w": 1}, "telemetry": {"azimut": 4, "lan": 1}}
-{"message": "terminated-service", "service": "service-name", "telemetry": {"azimut": 2, "lan": 1}}
-{"message": "terminated"}
+{"timestamp": 0, "message": "take-off"}
+{"timestamp": 0, "message": "initiated-service", "service": "service-name"}
+{"timestamp": 0, "message": "error", "service": "service-name", "error": "some-error"}
+{"timestamp": 0, "message": "event", "service": "service-name", "bbox_x1": 1, "bbox_x2": 3, "bbox_y1": 2, "bbox_y2": 4}
+{"timestamp": 0, "message": "terminated-service", "service": "service-name"}
+{"timestamp": 3, "message": "terminated"}

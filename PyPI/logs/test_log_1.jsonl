@@ -1,6 +1,0 @@
-{"timestamp": 0, "message": "take-off"}
-{"timestamp": 0, "message": "initiated-service", "service": "example_service"}
-{"timestamp": 0, "message": "event", "service": "example_service", "bbox_x1": 10, "bbox_x2": 30, "bbox_y1": 20, "bbox_y2": 40}
-{"timestamp": 0, "message": "error", "service": "example_service", "error": "An example error occurred"}
-{"timestamp": 0, "message": "terminated-service", "service": "example_service"}
-{"timestamp": 3, "message": "terminated"}
