@@ -1,6 +1,8 @@
 import os
 import json
 import asyncio
+import time
+from collections import OrderedDict
 
 class StorageFullError(Exception):
     pass
@@ -11,6 +13,12 @@ class Logger:
         self.is_running = False
         self.is_logging = False
         self.log_queue = []
+        self.start_time = None
+
+    def get_elapsed_time(self):
+        if self.start_time is None:
+            return 0
+        return int(time.time() - self.start_time)
 
     async def log_async(self, data):
         self.log_queue.append(data)
@@ -18,9 +26,14 @@ class Logger:
             self.is_logging = True
             while self.log_queue:
                 log_item = self.log_queue.pop(0)
+                log_item['timestamp'] = self.get_elapsed_time()
+    
+                ordered_log_item = OrderedDict([('timestamp', log_item['timestamp'])] + 
+                                   [(k, v) for k, v in log_item.items() if k != 'timestamp'])
+    
                 try:
                     with open(self.log_path, 'a') as file:
-                        file.write(json.dumps(log_item) + '\n')
+                        file.write(json.dumps(ordered_log_item) + '\n')
                 except Exception as e:
                     self.is_logging = False
                     raise StorageFullError(f"Error while logging: {e}")
@@ -34,7 +47,7 @@ class Logger:
         try:
             json.dumps(obj)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     async def logging_async(self):
@@ -62,21 +75,18 @@ class Logger:
     def terminate(self):
         asyncio.run(self.terminate_async())
 
-    async def start_async(self, log_file_name, telemetry):
+    async def start_async(self, log_file_name):
         await self.logging_async()
 
         if self.is_running:
             print('Terminate the logger before starting a new one')
             return
-        elif not log_file_name or not telemetry:
-            print('1 or more arguments are missing')
+        elif not log_file_name:
+            print('File name is missing')
             return
-        elif not self.is_json(telemetry):
-            print('Invalid JSON')
-            return
-
+        
         log_dir = 'logs'
-        os.makedirs(log_dir, exist_ok=True)  # Ensure directory creation
+        os.makedirs(log_dir, exist_ok=True) 
 
         self.log_path = os.path.join(log_dir, f'{log_file_name}.jsonl')
 
@@ -84,91 +94,84 @@ class Logger:
             print('File name already exists')
             return
 
+        self.start_time = time.time()
+
         data = {
             'message': 'take-off',
-            'telemetry': telemetry
         }
 
         await self.log_async(data)
         self.is_running = True
 
-    def start(self, log_file_name, telemetry):
-        asyncio.run(self.start_async(log_file_name, telemetry))
+    def start(self, log_file_name):
+        asyncio.run(self.start_async(log_file_name))
 
-    async def initiate_service_async(self, service, telemetry):
+    async def initiate_service_async(self, service):
         await self.logging_async()
 
         if not self.is_running:
             print('You must initialize a logger')
             return
-        elif not service or not telemetry:
-            print('1 or more arguments are missing')
-            return
-        elif not self.is_json(telemetry):
-            print('Invalid JSON')
+        elif not service:
+            print('Service name is missing')
             return
 
         data = {
             'message': 'initiated-service',
             'service': service,
-            'telemetry': telemetry
         }
 
         await self.log_async(data)
 
-    def initiate_service(self, service, telemetry):
-        asyncio.run(self.initiate_service_async(service, telemetry))
+    def initiate_service(self, service):
+        asyncio.run(self.initiate_service_async(service))
 
-    async def terminate_service_async(self, service, telemetry):
+    async def terminate_service_async(self, service):
         await self.logging_async()
 
         if not self.is_running:
             print('You must initialize the logger')
             return
-        elif not service or not telemetry:
-            print('1 or more arguments are missing')
-            return
-        elif not self.is_json(telemetry):
-            print('Invalid JSON')
+        elif not service:
+            print('Service name is missing')
             return
 
         data = {
             'message': 'terminated-service',
             'service': service,
-            'telemetry': telemetry
         }
 
         await self.log_async(data)
 
-    def terminate_service(self, service, telemetry):
-        asyncio.run(self.terminate_service_async(service, telemetry))
+    def terminate_service(self, service):
+        asyncio.run(self.terminate_service_async(service))
 
-    async def event_async(self, service, bbox, telemetry):
+    async def event_async(self, service, x1, y1, x2, y2):
         await self.logging_async()
 
         if not self.is_running:
             print('You must initialize the logger')
             return
-        elif not service or not bbox or not telemetry:
+        elif not service or x1 is None or y1 is None or x2 is None or y2 is None:
             print('1 or more arguments are missing')
-            return
-        elif not self.is_json(bbox) or not self.is_json(telemetry):
-            print('Invalid JSON')
             return
 
         data = {
             'message': 'event',
             'service': service,
-            'bbox': bbox,
-            'telemetry': telemetry
+            'bbox_x1': x1, 
+            'bbox_x2': x2,
+            'bbox_y1': y1, 
+            'bbox_y2': y2, 
+ 
         }
 
         await self.log_async(data)
 
-    def event(self, service, bbox, telemetry):
-        asyncio.run(self.event_async(service, bbox, telemetry))
+    def event(self, service, x1, y1, x2, y2):
+        asyncio.run(self.event_async(service, x1, y1, x2, y2))
 
-    async def error_async(self, service, err, telemetry):
+    async def error_async(self, service, err):
         await self.logging_async()
 
         if not self.is_running:
@@ -177,18 +180,15 @@ class Logger:
         elif not service or not err:
             print('1 or more arguments are missing')
             return
-        elif not self.is_json(telemetry):
-            print('Invalid JSON')
-            return
 
         data = {
             'message': 'error',
             'service': service,
             'error': err,
-            'telemetry': telemetry
         }
 
         await self.log_async(data)
 
-    def error(self, service, err, telemetry):
-        asyncio.run(self.error_async(service, err, telemetry))
+    def error(self, service, err):
+        asyncio.run(self.error_async(service, err))
+
