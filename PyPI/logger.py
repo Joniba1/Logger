@@ -28,12 +28,14 @@ class Logger:
                 log_item = self.log_queue.pop(0)
                 log_item['timestamp'] = self.get_elapsed_time()
     
-                ordered_log_item = OrderedDict([('timestamp', log_item['timestamp'])] + 
+                ordered_log_item = OrderedDict([('timestamp', str(log_item['timestamp']))] + 
                                    [(k, v) for k, v in log_item.items() if k != 'timestamp'])
     
                 try:
                     with open(self.log_path, 'a') as file:
-                        file.write(json.dumps(ordered_log_item) + '\n')
+                        # file.write(json.dumps(f'{ordered_log_item}  \n'.encode('utf-8')))
+                        # file.write(json.dumps(ordered_log_item) + '\n')
+                        file.write(json.dumps(log_item) + '\n')
                 except Exception as e:
                     self.is_logging = False
                     raise StorageFullError(f"Error while logging: {e}")
@@ -146,7 +148,7 @@ class Logger:
     def terminate_service(self, service):
         asyncio.run(self.terminate_service_async(service))
 
-    async def event_async(self, service, x1, y1, x2, y2):
+    async def event_async(self, service, x1, y1, x2, y2, frame_index):
         await self.logging_async()
 
         if not self.is_running:
@@ -159,17 +161,18 @@ class Logger:
         data = {
             'message': 'event',
             'service': service,
-            'bbox_x1': x1, 
-            'bbox_x2': x2,
-            'bbox_y1': y1, 
-            'bbox_y2': y2, 
+            'bbox_x1': str(x1), 
+            'bbox_x2': str(x2),
+            'bbox_y1': str(y1), 
+            'bbox_y2': str(y2), 
+            'frame_index': str(frame_index)
  
         }
 
         await self.log_async(data)
 
-    def event(self, service, x1, y1, x2, y2):
-        asyncio.run(self.event_async(service, x1, y1, x2, y2))
+    def event(self, service, x1, y1, x2, y2, frame_index):
+        asyncio.run(self.event_async(service, x1, y1, x2, y2, frame_index))
 
     async def error_async(self, service, err):
         await self.logging_async()
@@ -191,3 +194,6 @@ class Logger:
 
     def error(self, service, err):
         asyncio.run(self.error_async(service, err))
+
+
+

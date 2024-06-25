@@ -1,6 +1,6 @@
-{"timestamp": 0, "message": "take-off"}
-{"timestamp": 0, "message": "initiated-service", "service": "service-name"}
-{"timestamp": 0, "message": "error", "service": "service-name", "error": "some-error"}
-{"timestamp": 0, "message": "event", "service": "service-name", "bbox_x1": 1, "bbox_x2": 3, "bbox_y1": 2, "bbox_y2": 4}
-{"timestamp": 0, "message": "terminated-service", "service": "service-name"}
-{"timestamp": 3, "message": "terminated"}
+{"message": "take-off", "timestamp": 0}
+{"message": "initiated-service", "service": "service-name", "timestamp": 0}
+{"message": "error", "service": "service-name", "error": "some-error", "timestamp": 0}
+{"message": "event", "service": "service-name", "bbox_x1": "1", "bbox_x2": "3", "bbox_y1": "2", "bbox_y2": "4", "frame_index": "799", "timestamp": 0}
+{"message": "terminated-service", "service": "service-name", "timestamp": 0}
+{"message": "terminated", "timestamp": 0}
